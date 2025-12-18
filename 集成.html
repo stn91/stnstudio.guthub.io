@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>STNstudio - 智慧宿舍网络解决方案</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            font-size: clamp(0.95rem, 4vw, 1.05rem);
+        }
+
+        /* 导航栏 - 优化移动端 */
+        .navbar {
+            position: fixed; top: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000; transition: var(--transition);
+        }
+        .navbar-container {
+            max-width: 1200px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem clamp(1rem, 5vw, 2rem);
+            min-height: 70px;
+        }
+        .logo {
+            font-size: clamp(1.6rem, 5vw, 1.8rem); font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .nav-menu {
+            display: flex; gap: clamp(1rem, 3vw, 2.5rem); list-style: none;
+        }
+        .nav-menu li {
+            cursor: pointer; color: white; font-weight: 500;
+            padding: 0.5rem 0; position: relative; transition: var(--transition);
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .nav-menu li::after {
+            content: ''; position: absolute; bottom: 0; left: 0;
+            width: 0; height: 2px; background: var(--primary);
+            transition: var(--transition);
+        }
+        .nav-menu li:hover::after, .nav-menu li.active::after { width: 100%; }
+        .mobile-toggle {
+            display: none; background: none; border: none;
+            color: white; font-size: 1.5rem; cursor: pointer;
+            padding: 0.5rem; min-width: 44px; min-height: 44px;
+        }
+
+        /* 页面容器 - 优化移动端 */
+        .page {
+            display: none; min-height: calc(100vh - 80px);
+            margin-top: 70px; padding: clamp(1rem, 5vw, 2rem);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .page.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero区域 - 优化移动端 */
+        .hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #1e3a8a 100%);
+            color: white; text-align: center; padding: clamp(4rem, 10vw, 8rem) clamp(1rem, 5vw, 2rem);
+            position: relative; overflow: hidden;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 8vw, 3.5rem);
+            margin-bottom: 1.5rem; font-weight: 800; line-height: 1.2;
+        }
+        .hero .subtitle {
+            font-size: clamp(1rem, 4vw, 1.25rem);
+            margin-bottom: 2rem; color: rgba(255, 255, 255, 0.85);
+        }
+        .hero .highlight {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;
+        }
+
+        /* 统计数据 - 优化移动端 */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 30vw, 200px), 1fr));
+            gap: clamp(1rem, 3vw, 2rem); margin: clamp(2rem, 5vw, 4rem) 0;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--border-radius); padding: 1.5rem 1rem; text-align: center;
+            backdrop-filter: blur(10px); transition: var(--transition);
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .stat-number {
+            font-size: clamp(2rem, 6vw, 3rem); font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label { font-size: clamp(0.8rem, 3vw, 0.9rem); color: rgba(255, 255, 255, 0.75); font-weight: 500; }
+
+        /* 通用卡片 - 优化移动端 */
+        .section-header { text-align: center; margin-bottom: clamp(2rem, 5vw, 4rem); }
+        .section-title {
+            font-size: clamp(1.8rem, 6vw, 2.5rem); font-weight: 700; margin-bottom: 1rem; color: var(--dark);
+        }
+        .section-description {
+            font-size: clamp(0.95rem, 4vw, 1.1rem); color: var(--text-light); max-width: 700px; margin: 0 auto;
+        }
+
+        .features-grid, .service-tiers, .tech-specs, .building-list, .architecture-grid {
+            display: grid; gap: clamp(1.5rem, 4vw, 2rem);
+        }
+        .features-grid { grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 90vw, 320px), 1fr)); }
+        .service-tiers { grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 90vw, 350px), 1fr)); margin: 3rem 0; }
+        .tech-specs { grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 90vw, 250px), 1fr)); margin: 2rem 0; }
+        .architecture-grid { grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 90vw, 280px), 1fr)); margin: 3rem 0; }
+
+        .feature-card, .service-card, .network-status, .coverage-map, .ticket-form,
+        .architecture-card, .contact-main-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: var(--border-radius);
+            padding: clamp(1.5rem, 4vw, 2.5rem); transition: var(--transition); position: relative;
+        }
+        .feature-card:hover, .service-card:hover {
+            transform: translateY(-5px); box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 4px; height: 100%; background: linear-gradient(135deg, var(--primary), var(--accent));
+            transform: scaleY(0); transition: var(--transition);
+        }
+        .feature-card:hover::before { transform: scaleY(1); }
+
+        .feature-icon {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.5rem; font-size: 1.5rem; color: white;
+        }
+
+        .feature-title, .service-title {
+            font-size: clamp(1.1rem, 4vw, 1.25rem); font-weight: 600; margin-bottom: 0.5rem; color: var(--dark);
+        }
+
+        .service-badge {
+            position: absolute; top: 20px; right: 20px;
+            background: var(--success); color: white; padding: 0.25rem 0.75rem;
+            border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+        }
+
+        .service-price {
+            font-size: clamp(2rem, 6vw, 2.5rem); font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;
+        }
+        .service-price span { font-size: 1rem; color: var(--text-light); font-weight: 400; }
+
+        /* 按钮 - 优化移动端触控 */
+        .btn {
+            padding: clamp(0.8rem, 3vw, 0.9rem) clamp(1.5rem, 4vw, 2rem);
+            border-radius: 12px; font-weight: 600;
+            text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.5rem; transition: var(--transition); cursor: pointer;
+            border: none; font-size: 1rem; user-select: none;
+            min-height: 44px; min-width: 44px;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+        }
+        .btn-primary {
+            background: var(--primary); color: white; width: 100%;
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline {
+            background: white; color: var(--primary); border: 2px solid var(--primary);
+        }
+        .btn-outline:hover { background: var(--primary); color: white; }
+        .btn-white {
+            background: white; color: var(--primary);
+        }
+        .btn-white:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+
+        /* 提示框 - 优化移动端 */
+        .info-box, .warning-box, .error-box {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            border-radius: 8px; padding: clamp(0.8rem, 3vw, 1rem); margin: 1.5rem 0;
+        }
+        .info-box i, .warning-box i, .error-box i { margin-top: 0.25rem; flex-shrink: 0; }
+
+        /* 代码块 - 优化移动端 */
+        .code-block {
+            background: #f1f5f9; border: 1px solid #d1d5db;
+            border-radius: 8px; padding: 0.8rem; font-family: 'Courier New', monospace;
+            font-size: clamp(0.8rem, 3vw, 0.9rem); overflow-x: auto; margin: 0.5rem 0;
+            display: inline-block; width: 100%; box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 使用指南布局 - 优化移动端 */
+        .guide-layout {
+            display: grid; grid-template-columns: 250px 1fr; gap: 2rem;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .sidebar {
+            background: white; border-radius: var(--border-radius);
+            padding: 1.5rem; height: fit-content; position: sticky; top: 90px;
+            border: 1px solid #e2e8f0;
+        }
+        .sidebar h3 { margin-bottom: 1rem; color: var(--dark); }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li {
+            padding: 0.75rem 1rem; margin-bottom: 0.5rem; border-radius: 8px;
+            cursor: pointer; transition: var(--transition); color: var(--text-light);
+            user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background: var(--primary); color: white; font-weight: 500;
+        }
+        .content { min-height: 60vh; }
+        .content-section h2 { margin-bottom: 1.5rem; color: var(--dark); }
+        .step-list li { margin-bottom: 1.5rem; padding-left: 1.5rem; }
+
+        /* 联系卡片 - 优化移动端 */
+        .contact-section {
+            padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 2rem);
+            max-width: 800px; margin: 0 auto;
+        }
+        .contact-main-card {
+            text-align: center; padding: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 20px; box-shadow: var(--shadow);
+            position: relative; overflow: hidden;
+        }
+        .contact-main-icon {
+            width: clamp(80px, 15vw, 100px); height: clamp(80px, 15vw, 100px);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 2rem; font-size: clamp(2rem, 6vw, 2.5rem); color: white;
+        }
+        .contact-main-title {
+            font-size: clamp(1.5rem, 5vw, 2rem); font-weight: 800; margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .contact-main-subtitle {
+            font-size: clamp(0.95rem, 4vw, 1.1rem); color: var(--text-light); margin-bottom: 3rem;
+        }
+        .contact-qq-section {
+            background: white; border: 2px dashed var(--primary);
+            border-radius: 16px; padding: clamp(1.5rem, 4vw, 2.5rem); margin: 2rem 0;
+        }
+        .qq-icon { font-size: clamp(2.5rem, 8vw, 3rem); color: var(--primary); margin-bottom: 1rem; }
+        .qq-number {
+            font-size: clamp(1.4rem, 5vw, 1.8rem); font-weight: 700; color: var(--dark);
+            margin-bottom: 1rem; letter-spacing: 1px; word-break: break-all;
+        }
+        .qq-note { color: var(--text-light); font-size: clamp(0.85rem, 3vw, 0.95rem); line-height: 1.6; }
+        .contact-button-group {
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;
+        }
+        .work-order-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid var(--warning); border-radius: 12px;
+            padding: 1.5rem; margin: 2rem 0; text-align: center;
+        }
+        .work-order-notice i { color: var(--warning); font-size: 2rem; margin-bottom: 0.5rem; }
+        .work-order-notice p { color: #854d0e; font-weight: 600; }
+
+        /* 页脚 */
+        <footer>
+            <div class="footer-content">
+                <p>&copy; 2025 最终解释权STNstudio</p>
+            </div>
+        </footer>
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 2000; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex; animation: fadeIn 0.3s ease forwards;
+        }
+        .modal-content {
+            background: white; border-radius: 24px; padding: 3rem 2rem;
+            max-width: 90vw; width: 500px; text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        .modal-icon {
+            font-size: 4rem; margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .modal-title {
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--dark);
+        }
+        .modal-info {
+            background: #f1f5f9; border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;
+            font-size: 1.1rem; word-break: break-all;
+        }
+        .modal-info a {
+            color: var(--primary); font-weight: 600; text-decoration: none;
+        }
+        .modal-info a:hover { text-decoration: underline; }
+        .modal-close {
+            background: var(--primary); color: white; border: none;
+            padding: 0.75rem 2rem; border-radius: 12px; font-size: 1rem;
+            cursor: pointer; font-weight: 600; transition: var(--transition);
+            min-width: 120px; min-height: 44px;
+        }
+        .modal-close:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        /* 协议页面样式 */
+        .protocol-content {
+            max-width: 1200px; margin: 0 auto;
+            background: white; border-radius: 20px; padding: 3rem;
+            box-shadow: var(--shadow-lg); border: 1px solid #e2e8f0;
+        }
+        .protocol-image-container {
+            width: 100%; max-width: 800px; margin: 2rem auto;
+            border-radius: 16px; overflow: hidden;
+            box-shadow: var(--shadow-lg); background: var(--light);
+            min-height: 400px; display: flex; align-items: center; justify-content: center;
+        }
+        .protocol-image {
+            width: 100%; height: auto; display: block;
+        }
+        .loading-spinner {
+            font-size: 3rem; color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .error-message {
+            color: var(--danger); text-align: center; padding: 2rem;
+        }
+
+        /* 响应式 - 优化移动端 */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed; top: 70px; left: -100%;
+                width: 100%; height: calc(100vh - 70px); background: var(--dark);
+                flex-direction: column; align-items: center; justify-content: flex-start;
+                padding-top: 2rem; transition: left 0.4s ease;
+            }
+            .nav-menu li { width: 80%; text-align: center; padding: 1rem; }
+            .nav-menu.active { left: 0; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            
+            .guide-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .sidebar {
+                position: static; padding: 1rem;
+                display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory; gap: 0.5rem;
+            }
+            .sidebar h3 { display: none; }
+            .sidebar-menu {
+                display: flex; flex-wrap: nowrap; min-width: max-content;
+            }
+            .sidebar-menu li {
+                white-space: nowrap; scroll-snap-align: start;
+                padding: 0.5rem 1rem; margin-bottom: 0;
+            }
+            
+            .contact-button-group { flex-direction: column; align-items: stretch; }
+            .contact-button-group .btn { width: 100%; }
+            
+            .modal-content { padding: 2rem 1.5rem; }
+            .protocol-content { padding: 2rem 1rem; }
+        }
+
+        /* ===== 极速计划样式 - 完全还原原始深色主题 ===== */
+        .speed-plan-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .speed-plan-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin-top: 40px;
+            box-shadow: 0 12px 40px rgba(2, 8, 20, 0.3), 
+                        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+            transition: all 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .speed-plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            animation: backgroundPulse 15s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .speed-plan-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(2, 8, 20, 0.4), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+        
+        .speed-plan-title {
+            font-size: 2.5rem;
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            animation: titleGlow 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.2)); }
+            100% { filter: drop-shadow(0 0 20px rgba(14, 165, 233, 0.4)); }
+        }
+        
+        .speed-plan-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .speed-plan-content {
+            font-size: 1rem;
+            margin-bottom: 32px;
+            white-space: pre-line;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        
+        .speed-plan-button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .speed-plan-btn {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .speed-plan-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+            z-index: -1;
+        }
+        
+        .speed-plan-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .speed-plan-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 24px rgba(14, 165, 233, 0.25);
+        }
+        
+        .speed-plan-btn:active {
+            transform: translateY(0) scale(0.98);
+            transition: all 0.1s ease;
+        }
+        
+        .speed-plan-btn-primary {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(56, 189, 248, 0.25) 100%);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .speed-plan-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+        }
+        
+        .speed-plan-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .speed-plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .speed-plan-card-item {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        .speed-plan-card-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 0;
+        }
+        
+        .speed-plan-card-item:hover::before {
+            opacity: 1;
+        }
+        
+        .speed-plan-card-item:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 32px rgba(14, 165, 233, 0.2);
+        }
+        
+        .speed-plan-card-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            transition: all 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .speed-plan-card-item:hover .speed-plan-card-icon {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
+        .speed-plan-card-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .speed-plan-card-item:hover .speed-plan-card-name {
+            color: var(--accent-color);
+        }
+        
+        .speed-plan-card-status {
+            display: inline-block;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .status-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .status-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        /* 极速计划详情模态框 */
+        .speed-plan-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .speed-plan-modal.active {
+            display: flex;
+        }
+
+        .speed-plan-modal-content {
+            background: var(--secondary-dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            box-shadow: 0 20px 50px rgba(2, 8, 20, 0.5);
+            color: var(--text-primary);
+        }
+
+        .speed-plan-modal.active .speed-plan-modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .speed-plan-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .speed-plan-close-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            transform: rotate(90deg);
+        }
+
+        /* 响应式 - 优化移动端 */
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed; top: 70px; left: -100%;
+                width: 100%; height: calc(100vh - 70px); background: var(--dark);
+                flex-direction: column; align-items: center; justify-content: flex-start;
+                padding-top: 2rem; transition: left 0.4s ease;
+            }
+            .nav-menu li { width: 80%; text-align: center; padding: 1rem; }
+            .nav-menu.active { left: 0; }
+            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
+            
+            .guide-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .sidebar {
+                position: static; padding: 1rem;
+                display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory; gap: 0.5rem;
+            }
+            .sidebar h3 { display: none; }
+            .sidebar-menu {
+                display: flex; flex-wrap: nowrap; min-width: max-content;
+            }
+            .sidebar-menu li {
+                white-space: nowrap; scroll-snap-align: start;
+                padding: 0.5rem 1rem; margin-bottom: 0;
+            }
+            
+            .contact-button-group { flex-direction: column; align-items: stretch; }
+            .contact-button-group .btn { width: 100%; }
+            
+            .modal-content { padding: 2rem 1.5rem; }
+            .protocol-content { padding: 2rem 1rem; }
+            .speed-plan-card { padding: 40px 20px; }
+            .speed-plan-title { font-size: 2rem; }
+            .speed-plan-modal-content { padding: 24px 16px; }
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                <i class="fas fa-network-wired"></i>
+                STNstudio
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li data-page="home" class="active">首页</li>
+                <li data-page="about">关于我们</li>
+                <li data-page="services">服务详情</li>
+                <li data-page="guide">使用指南</li>
+                <li data-page="contact">联系我们</li>
+                <li data-page="protocol">STN公开协议</li>
+                <li data-page="speed-plan">极速计划</li>
+            </ul>
+            <button class="mobile-toggle" id="mobileToggle" aria-label="打开菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 首页 -->
+    <div class="page active" data-page="home" id="page-home">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>智慧宿舍网络解决方案</h1>
+                <p class="subtitle">STNstudio 采用先进网络架构，为宿舍环境提供<span class="highlight">稳定</span>、<span class="highlight">高速</span>、<span class="highlight">安全</span>的网络服务</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-number">100M</div><div class="stat-label">高速WiFi</div></div>
+                    <div class="stat-card"><div class="stat-number">WiFi 6</div><div class="stat-label">最新协议</div></div>
+                    <div class="stat-card"><div class="stat-number">99.9%</div><div class="stat-label">可用性保证</div></div>
+                    <div class="stat-card"><div class="stat-number">7×24</div><div class="stat-label">技术支持</div></div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-white" onclick="navigateTo('guide')"><i class="fas fa-book"></i> 查看使用指南</button>
+                    <button class="btn btn-outline" onclick="navigateTo('contact')"><i class="fas fa-headset"></i> 联系技术支持</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="section-header">
+                <h2 class="section-title">核心技术优势</h2>
+                <p class="section-description">专为宿舍环境优化的网络架构，提供卓越的上网体验</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <h3 class="feature-title">智能带宽分配</h3>
+                    <p class="feature-description">基于DPI技术动态识别应用类型，自动分配带宽优先级，确保学习、游戏、视频流畅不卡顿</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-shield-virus"></i></div>
+                    <h3 class="feature-title">先进安全防护</h3>
+                    <p class="feature-description">部署NGFW下一代防火墙，实时阻断网络攻击，内置防ARP欺骗、DDoS防护机制</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-wifi"></i></div>
+                    <h3 class="feature-title">全屋无缝覆盖</h3>
+                    <p class="feature-description">采用先进WiFi6，信号更强，覆盖更广，死角更少</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-server"></i></div>
+                    <h3 class="feature-title">云端智能运维</h3>
+                    <p class="feature-description">90%问题可远程解决，快速响应，无需等待</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                    <h3 class="feature-title">可视化网络管理</h3>
+                    <p class="feature-description">提供实时网络状态面板，查看连接设备、当前速率、信号强度，支持历史数据回溯</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 关于我们 -->
+    <div class="page" data-page="about" id="page-about">
+        <section class="page-header">
+            <h1>关于 STNstudio</h1>
+            <p>专业的网络服务团队，致力于打造高速、流畅、安全的宿舍网络环境</p>
+        </section>
+
+        <section class="content-section">
+            <h2 class="section-title">核心网络架构</h2>
+            <p class="section-description">采用业界领先的技术方案，为宿舍环境量身定制</p>
+            
+            <div class="architecture-grid">
+                <div class="architecture-card">
+                    <div class="architecture-icon"><i class="fas fa-wifi"></i></div>
+                    <h3 class="architecture-title">无线接入层</h3>
+                    <p class="architecture-spec">
+                        双频WiFi 6 AP（802.11ax）<br>
+                        支持MU-MIMO、OFDMA技术<br>
+                        单AP最大并发用户数8<br>
+                        智能信号优化
+                    </p>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="architecture-icon"><i class="fas fa-network-wired"></i></div>
+                    <h3 class="architecture-title">核心路由层</h3>
+                    <p class="architecture-spec">
+                        高性能企业级路由器<br>
+                        BGP/OSPF动态路由协议<br>
+                        10Gbps吞吐量<br>
+                        智能负载均衡
+                    </p>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="architecture-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3 class="architecture-title">安全防护层</h3>
+                    <p class="architecture-spec">
+                        下一代防火墙NGFW<br>
+                        实时攻击检测与阻断<br>
+                        ARP欺骗/DDoS防护<br>
+                        用户隔离与隐私保护
+                    </p>
+                </div>
+
+                <div class="architecture-card">
+                    <div class="architecture-icon"><i class="fas fa-cloud"></i></div>
+                    <h3 class="architecture-title">云端管理层</h3>
+                    <p class="architecture-spec">
+                        SNMPv3远程监控<br>
+                        90%问题远程解决<br>
+                        7×24小时运维支持<br>
+                        自动故障预警
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 服务详情 -->
+    <div class="page" data-page="services" id="page-services">
+        <section class="page-header">
+            <h1>服务详情</h1>
+            <p>透明的服务条款，专业的技术支持，为您的网络体验保驾护航</p>
+        </section>
+
+        <section class="content-section">
+            <h2 class="section-title">服务套餐</h2>
+            <div class="service-tiers">
+                <div class="service-card">
+                    <div class="service-badge">基础版</div>
+                    <h3 class="service-title">标准接入服务</h3>
+                    <div class="service-price">¥0<span>/月</span></div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">基础网络接入，满足日常学习需求</p>
+                    <ul class="service-features">
+                        <li>上下行对称50M带宽</li><li>2.4GHz WiFi覆盖</li><li>基础安全防护</li>
+                        <li>每日7:00-23:00技术支持</li><li>单设备同时在线</li><li>Web认证接入</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="alert('请联系管理员开通')">申请开通</button>
+                </div>
+
+                <div class="service-card" style="border: 2px solid var(--primary);">
+                    <div class="service-badge" style="background: var(--primary);">推荐</div>
+                    <h3 class="service-title">Premium尊享服务</h3>
+                    <div class="service-price">¥29<span>/月</span></div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">全功能高速网络，畅享数字生活</p>
+                    <ul class="service-features">
+                        <li>上下行对称200M带宽</li><li>双频WiFi 6（2.4GHz+5GHz）</li><li>多层安全防护</li>
+                        <li>7×24小时技术支持</li><li>3设备同时在线</li><li>802.1X认证+无感知认证</li>
+                        <li>专属网络优化通道</li><li>延迟优化（游戏/直播）</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="alert('请联系管理员升级')">立即升级</button>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-badge">企业版</div>
+                    <h3 class="service-title">团队协作套餐</h3>
+                    <div class="service-price">¥99<span>/月</span></div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">适合宿舍团队或小型项目组</p>
+                    <ul class="service-features">
+                        <li>上下行对称500M带宽</li><li>专属独立IP地址</li><li>定制网络安全策略</li>
+                        <li>5设备同时在线</li><li>端口映射/DDNS支持</li><li>网络使用分析报告</li>
+                        <li>故障优先响应</li><li>专属技术顾问</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="alert('请联系商务定制')">联系我们</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 使用指南 - 优化移动端导航 -->
+    <div class="page" data-page="guide" id="page-guide">
+        <section class="page-header">
+            <h1>使用指南</h1>
+            <p>详细的操作说明和常见问题解答</p>
+        </section>
+
+        <div class="guide-layout">
+            <aside class="sidebar">
+                <h3>快速导航</h3>
+                <ul class="sidebar-menu" id="guideSidebar">
+                    <li data-section="connection" class="active">连接网络</li>
+                    <li data-section="authentication">认证登录</li>
+                    <li data-section="troubleshooting">常见问题</li>
+                    <li data-section="optimization">网络优化</li>
+                    <li data-section="security">安全建议</li>
+                    <li data-section="contact-support">联系支持</li>
+                </ul>
+            </aside>
+
+            <div class="content" id="guideContent">
+                <section class="content-section" id="section-connection">
+                    <h2><i class="fas fa-wifi"></i> 连接网络</h2>
+                    <h3>一、无线网络连接</h3>
+                    <ol class="step-list">
+                        <li>
+                            <strong>搜索可用网络</strong><br>
+                            在设备的WiFi设置中，搜索SSID为 <code class="code-block">STNstudio-5G</code> 或 <code class="code-block">STNstudio-2.4G</code> 的无线网络
+                        </li>
+                        <li>
+                            <strong>输入密码</strong><br>
+                            密码：<code class="code-block">STN2025@Studio</code>
+                            <div class="info-box">
+                                <i class="fas fa-info-circle"></i>
+                                <div>如果30秒内未获取到IP，请尝试忘记网络后重新连接</div>
+                            </div>
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="content-section" id="section-authentication" style="display: none;">
+                    <h2><i class="fas fa-lock"></i> 认证登录</h2>
+                    <h3>Web认证（推荐）</h3>
+                    <ol class="step-list">
+                        <li>
+                            <strong>访问任意网站</strong><br>
+                            会自动跳转到认证页面，账号：学号，密码：身份证后6位
+                            <div class="warning-box">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>首次登录后请立即修改密码！</div>
+                            </div>
+                        </li>
+                        <li>
+                            <strong>保存认证信息</strong><br>
+                            浏览器会提示保存密码，建议保存以便下次自动登录
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="content-section" id="section-troubleshooting" style="display: none;">
+                    <h2><i class="fas fa-tools"></i> 常见问题</h2>
+                    <h3>无法连接WiFi</h3>
+                    <ul class="service-features">
+                        <li>检查密码是否正确：STN2025@Studio</li>
+                        <li>确认是否已开启WiFi功能</li>
+                        <li>尝试忘记网络后重新连接</li>
+                        <li>检查设备是否在信号覆盖范围内</li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 2rem;">认证页面无法打开</h3>
+                    <div class="error-box">
+                        <i class="fas fa-times-circle"></i>
+                        <div>手动访问 <code class="code-block">http://192.168.1.1</code> 强制跳转认证页面</div>
+                    </div>
+                </section>
+
+                <section class="content-section" id="section-optimization" style="display: none;">
+                    <h2><i class="fas fa-rocket"></i> 网络优化</h2>
+                    <h3>提升网络速度</h3>
+                    <ul class="service-features">
+                        <li>优先连接5GHz频段（信号名称后缀-5G）</li>
+                        <li>关闭后台占用带宽的应用</li>
+                        <li>定期清理设备缓存</li>
+                        <li>避免在高峰期（21:00-23:00）进行大文件下载</li>
+                    </ul>
+                </section>
+
+                <section class="content-section" id="section-security" style="display: none;">
+                    <h2><i class="fas fa-user-shield"></i> 安全建议</h2>
+                    <h3>保护您的网络安全</h3>
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>不要在公共设备上保存密码</div>
+                    </div>
+                    <ul class="service-features">
+                        <li>定期修改认证密码</li>
+                        <li>开启设备防火墙</li>
+                        <li>不访问可疑网站</li>
+                        <li>及时更新设备系统</li>
+                    </ul>
+                </section>
+
+                <section class="content-section" id="section-contact-support" style="display: none;">
+                    <h2><i class="fas fa-headset"></i> 联系支持</h2>
+                    <div class="contact-qq-section">
+                        <div class="qq-icon"><i class="fab fa-qq"></i></div>
+                        <div class="qq-number">2130545154</div>
+                        <div class="qq-note">
+                            添加时请备注宿舍号+姓名<br>
+                            工作时间：7×24小时在线<br>
+                            平均响应时间：&lt;15分钟
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 1.5rem; max-width: 300px;" 
+                                onclick="window.location.href='tencent://message/?uin=2130545154&Site=STNstudio&Menu=yes'">
+                            <i class="fab fa-qq"></i> 一键联系QQ
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系我们 - 优化按钮功能 -->
+    <div class="page" data-page="contact" id="page-contact">
+        <section class="page-header">
+            <h1>联系我们</h1>
+            <p>7×24小时技术支持，专业团队随时待命</p>
+        </section>
+
+        <section class="contact-section">
+            <div class="contact-main-card">
+                <div class="contact-main-icon"><i class="fas fa-headset"></i></div>
+                <h2 class="contact-main-title">技术支持中心</h2>
+                <p class="contact-main-subtitle">提供全天候技术支持服务，随时解决您的网络问题</p>
+
+                <div class="contact-qq-section">
+                    <div class="qq-icon"><i class="fab fa-qq"></i></div>
+                    <div class="qq-number">2130545154</div>
+                    <div class="qq-note">
+                        添加时请备注宿舍号+姓名<br>
+                        工作时间：7×24小时在线<br>
+                        平均响应时间：&lt;15分钟
+                    </div>
+                    <button class="btn btn-primary" style="margin-top: 1.5rem; max-width: 300px;" 
+                            onclick="window.location.href='tencent://message/?uin=2130545154&Site=STNstudio&Menu=yes'">
+                        <i class="fab fa-qq"></i> 一键联系QQ
+                    </button>
+                </div>
+
+                <!-- 工单功能已删除，替换为提示 -->
+                <div class="work-order-notice">
+                    <i class="fas fa-ticket-alt" style="display: block; margin-bottom: 0.5rem;"></i>
+                    <p style="margin: 0; font-size: 1.1rem;">若需要工单服务，请联系管理员</p>
+                    <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-light);">
+                        我们的QQ客服能更快速响应您的需求
+                    </p>
+                </div>
+
+                <div class="contact-button-group">
+                    <button class="btn btn-outline" onclick="openEmailModal()">
+                        <i class="fas fa-envelope"></i> 商务合作
+                    </button>
+                    <button class="btn btn-outline" onclick="openPhoneModal()">
+                        <i class="fas fa-phone"></i> 电话支持
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- STN公开协议页面 -->
+    <div class="page" data-page="protocol" id="page-protocol">
+        <section class="page-header">
+            <h1>STN公开协议</h1>
+            <p>公开透明的服务协议与规范</p>
+        </section>
+
+        <section class="content-section">
+            <div class="protocol-content">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--dark);">
+                    <i class="fas fa-file-contract"></i> 服务协议文档
+                </h2>
+                <div class="protocol-image-container" id="protocolImageContainer">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                </div>
+                <p style="text-align: center; color: var(--text-light); margin-top: 1rem;">
+                    协议版本：v2.5 | 最后更新：2025-01-15
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- 极速计划页面 - 完全还原原始深色主题 -->
+    <div class="page" data-page="speed-plan" id="page-speed-plan">
+        <div class="speed-plan-container">
+            <div id="speed-plan-main" class="speed-plan-section active">
+                <div class="speed-plan-card">
+                    <h1 class="speed-plan-title">极速计划</h1>
+                    <div class="speed-plan-subtitle">STN工作室公示</div>
+                    <div class="speed-plan-content">关于管理办法的进一步优化——（上传/下载协议）
+时间管理：
+本协议规定所有协议人设备的使用时间区间"仅为参考"
+允许P2P类上下行高速时间
+一、最高速下载9mb/s-12.5mb/s
+工作日7:00-11:30 14:40-15:40
+节假日7:00-13:00
+二、高速下载8mb/s-10mb/s
+工作日不变
+节假日7:00-13:00 15:00-20:00 21:00-23:00</div>
+                    <div class="speed-plan-button-group">
+                        <button class="speed-plan-btn speed-plan-btn-primary" onclick="showSpeedPlanPage('speed-plan-wifi')">
+                            <i class="fas fa-wifi"></i> WiFi卡顿快速定位
+                        </button>
+                        <button class="speed-plan-btn" onclick="showSpeedPlanPage('speed-plan-custom')">
+                            <i class="fas fa-edit"></i> 使用卡顿重点软件/网页
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="speed-plan-wifi" class="speed-plan-section">
+                <div class="speed-plan-card">
+                    <h1 class="speed-plan-title">WiFi卡顿快速定位</h1>
+                    <div class="speed-plan-subtitle">一键诊断卡顿原因分布</div>
+                    <div class="speed-plan-grid">
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('wifi', 'browsing')">
+                            <i class="fas fa-globe speed-plan-card-icon" style="color: #0ea5e9;"></i>
+                            <div class="speed-plan-card-name">浏览网页卡顿/打不开</div>
+                            <div class="speed-plan-card-status status-warning">点击查看详情</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('wifi', 'gaming')">
+                            <i class="fas fa-gamepad speed-plan-card-icon" style="color: #ec4899;"></i>
+                            <div class="speed-plan-card-name">玩游戏卡顿</div>
+                            <div class="speed-plan-card-status status-warning">点击查看详情</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('wifi', 'download')">
+                            <i class="fas fa-download speed-plan-card-icon" style="color: #10b981;"></i>
+                            <div class="speed-plan-card-name">下载速度慢</div>
+                            <div class="speed-plan-card-status status-warning">点击查看详情</div>
+                        </div>
+                    </div>
+                    <div class="speed-plan-button-group">
+                        <button class="speed-plan-btn" onclick="showSpeedPlanPage('speed-plan-main')">
+                            <i class="fas fa-arrow-left"></i> 返回主页
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="speed-plan-custom" class="speed-plan-section">
+                <div class="speed-plan-card">
+                    <h1 class="speed-plan-title">使用卡顿重点软件/网页</h1>
+                    <div class="speed-plan-subtitle">以下应用/网站存在加载问题</div>
+                    <div class="speed-plan-grid">
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('app', '酷狗APP')">
+                            <i class="fas fa-music speed-plan-card-icon" style="color: #0ea5e9;"></i>
+                            <div class="speed-plan-card-name">酷狗APP</div>
+                            <div class="speed-plan-card-status status-warning">加载缓慢</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('app', 'github.com')">
+                            <i class="fab fa-github speed-plan-card-icon" style="color: #4b6cb7;"></i>
+                            <div class="speed-plan-card-name">github.com</div>
+                            <div class="speed-plan-card-status status-danger">访问失败</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('app', '抖音APP')">
+                            <i class="fab fa-tiktok speed-plan-card-icon" style="color: #ec4899;"></i>
+                            <div class="speed-plan-card-name">抖音APP</div>
+                            <div class="speed-plan-card-status status-warning">加载缓慢</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('app', '我的世界APP')">
+                            <i class="fas fa-cube speed-plan-card-icon" style="color: #10b981;"></i>
+                            <div class="speed-plan-card-name">我的世界APP</div>
+                            <div class="speed-plan-card-status status-danger">有几率卡顿</div>
+                        </div>
+                        
+                        <div class="speed-plan-card-item" onclick="showSpeedPlanDetail('app', '豆包APP')">
+                            <i class="fas fa-robot speed-plan-card-icon" style="color: #8b5cf6;"></i>
+                            <div class="speed-plan-card-name">豆包APP</div>
+                            <div class="speed-plan-card-status status-warning">加载缓慢</div>
+                        </div>
+                    </div>
+                    <div class="speed-plan-button-group">
+                        <button class="speed-plan-btn" onclick="showSpeedPlanPage('speed-plan-main')">
+                            <i class="fas fa-arrow-left"></i> 返回主页
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-icon" id="modalIcon"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <div class="modal-info" id="modalInfo"></div>
+            <button class="modal-close" onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 极速计划详情模态框 -->
+    <div class="speed-plan-modal" id="speedPlanModal" onclick="closeSpeedPlanModal(event)">
+        <div class="speed-plan-modal-content" onclick="event.stopPropagation()">
+            <span class="speed-plan-close-btn" onclick="closeSpeedPlanModal()">&times;</span>
+            <div id="speedPlanModalBody"></div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 最终解释权STNstudio</p>
+        </div>
+    </footer>
+
+    <script>
+        // GitHub配置 - 已更新为正确信息
+        const GITHUB_CONFIG = {
+            username: 'stnstudio',  // GitHub用户名
+            repo: 'stnstudio.github.io',  // 仓库名
+            branch: 'main',  // 分支名
+            imagePath: 'xy.png'  // 图片路径
+        };
+        
+        function init() {
+            setupNavigation();
+            setupMobileMenu();
+            setupGuideSidebar();
+            setupAnimations();
+            loadProtocolImage();
+        }
+
+        function setupNavigation() {
+            document.querySelectorAll('.nav-menu li[data-page]').forEach(item => {
+                item.addEventListener('click', () => navigateTo(item.dataset.page));
+            });
+        }
+
+        function navigateTo(pageName) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // 隐藏极速计划页面
+            document.querySelectorAll('.speed-plan-section').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // 显示目标页面
+            const targetPage = document.getElementById(`page-${pageName}`);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+                setTimeout(() => targetPage.classList.add('active'), 10);
+                
+                // 如果是使用指南页面，默认显示第一个 section
+                if (pageName === 'guide') {
+                    showGuideSection('connection');
+                }
+                return;
+            }
+            
+            // 如果是极速计划页面
+            if (pageName === 'speed-plan') {
+                const speedPlanMain = document.getElementById('speed-plan-main');
+                if (speedPlanMain) {
+                    speedPlanMain.style.display = 'block';
+                    setTimeout(() => speedPlanMain.classList.add('active'), 10);
+                }
+            }
+            
+            // 更新导航栏激活状态
+            document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
+            document.querySelector(`.nav-menu li[data-page="${pageName}"]`)?.classList.add('active');
+            
+            // 关闭移动端菜单
+            document.getElementById('navMenu').classList.remove('active');
+            const icon = document.querySelector('#mobileToggle i');
+            icon.classList.add('fa-bars');
+            icon.classList.remove('fa-times');
+            
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setupMobileMenu() {
+            const mobileToggle = document.getElementById('mobileToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            mobileToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                const icon = mobileToggle.querySelector('i');
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
+            });
+            
+            // 点击菜单项后关闭菜单
+            navMenu.querySelectorAll('li').forEach(item => {
+                item.addEventListener('click', () => {
+                    navMenu.classList.remove('active');
+                    const icon = mobileToggle.querySelector('i');
+                    icon.classList.add('fa-bars');
+                    icon.classList.remove('fa-times');
+                });
+            });
+        }
+
+        function setupGuideSidebar() {
+            const guideSidebar = document.getElementById('guideSidebar');
+            
+            guideSidebar.addEventListener('click', (e) => {
+                const target = e.target.closest('li[data-section]');
+                if (!target) return;
+                
+                const targetId = target.dataset.section;
+                showGuideSection(targetId);
+            });
+        }
+
+        function showGuideSection(sectionName) {
+            // 隐藏所有 section
+            const sections = document.querySelectorAll('#guideContent .content-section');
+            sections.forEach(section => section.style.display = 'none');
+            
+            // 显示目标 section
+            const targetSection = document.getElementById(`section-${sectionName}`);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            
+            // 更新侧边栏激活状态
+            const guideSidebar = document.getElementById('guideSidebar');
+            guideSidebar.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+            guideSidebar.querySelector(`li[data-section="${sectionName}"]`)?.classList.add('active');
+            
+            // 移动端自动滚动到内容区域
+            if (window.innerWidth <= 768) {
+                const content = document.getElementById('guideContent');
+                content.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // 极速计划相关函数
+        function showSpeedPlanPage(pageId) {
+            // 隐藏所有极速计划页面
+            document.querySelectorAll('.speed-plan-section').forEach(page => {
+                page.classList.remove('active');
+                page.style.display = 'none';
+            });
+            
+            // 显示目标页面
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+                setTimeout(() => targetPage.classList.add('active'), 10);
+            }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showSpeedPlanDetail(type, key) {
+            const data = speedPlanDetailData[type][key];
+            if (!data) {
+                alert('未找到详情数据');
+                return;
+            }
+            
+            document.getElementById('speedPlanModalBody').innerHTML = `
+                <h2 style="color:var(--text-primary);margin-bottom:24px;font-size:1.4rem;font-weight:600;">${data.title}</h2>
+                
+                <h3 style="color:var(--danger);margin-bottom:12px;font-size:1rem;font-weight:600;">问题分析：</h3>
+                <ul style="margin-bottom:24px;color:var(--text-secondary);padding-left:20px;line-height:1.8;">
+                    ${data.issues.map(issue => `<li style="margin-bottom:8px;">${issue}</li>`).join('')}
+                </ul>
+                
+                <h3 style="color:var(--success);margin-bottom:12px;font-size:1rem;font-weight:600;">解决方案：</h3>
+                <ul style="color:var(--text-secondary);padding-left:20px;line-height:1.8;">
+                    ${data.solutions.map(solution => `<li style="margin-bottom:8px;">${solution}</li>`).join('')}
+                </ul>
+                
+                <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border-color);">
+                    <p style="color:var(--text-secondary);font-size:0.8rem;">
+                        <i class="fas fa-info-circle" style="margin-right:5px;"></i> 
+                        点击卡片外部区域或右上角×可关闭此窗口
+                    </p>
+                </div>
+            `;
+            
+            const modal = document.getElementById('speedPlanModal');
+            modal.style.display = 'flex';
+            
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+
+        // 打开邮箱模态框
+        function openEmailModal() {
+            const modal = document.getElementById('modalOverlay');
+            document.getElementById('modalIcon').innerHTML = '<i class="fas fa-envelope"></i>';
+            document.getElementById('modalTitle').textContent = '商务合作';
+            document.getElementById('modalMessage').textContent = '请将您的合作需求发送至我们的商务邮箱：';
+            document.getElementById('modalInfo').innerHTML = 
+                '<a href="mailto:2130545154@qq.com">2130545154@qq.com</a><br><br>' +
+                '<small style="color: var(--text-light);">我们将在24小时内回复您的邮件</small>';
+            
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 打开电话模态框
+        function openPhoneModal() {
+            const modal = document.getElementById('modalOverlay');
+            document.getElementById('modalIcon').innerHTML = '<i class="fas fa-phone"></i>';
+            document.getElementById('modalTitle').textContent = '电话支持';
+            document.getElementById('modalMessage').textContent = '拨打我们的技术支持热线：';
+            document.getElementById('modalInfo').innerHTML = 
+                '<a href="tel:13400552376">134 0055 2376</a><br><br>' +
+                '<small style="color: var(--text-light);">服务时间：7×24小时全天候支持</small>';
+            
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭模态框
+        function closeModal(event) {
+            const modal = document.getElementById('modalOverlay');
+            // 如果点击的是遮罩层本身或关闭按钮
+            if (!event || event.target === modal || event.target.classList.contains('modal-close')) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+                document.body.style.overflow = '';
+            }
+        }
+
+        // 关闭极速计划模态框
+        function closeSpeedPlanModal(event) {
+            const modal = document.getElementById('speedPlanModal');
+            if (!event || event.target === modal || event.target.classList.contains('speed-plan-close-btn')) {
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        // 加载GitHub图片
+        function loadProtocolImage() {
+            const container = document.getElementById('protocolImageContainer');
+            
+            // 构建GitHub raw图片URL
+            const imageUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.imagePath}`;
+            
+            // 创建图片元素
+            const img = document.createElement('img');
+            img.className = 'protocol-image';
+            img.src = imageUrl;
+            img.alt = 'STN公开协议';
+            
+            img.onload = function() {
+                // 图片加载成功
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
+            
+            img.onerror = function() {
+                // 图片加载失败
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; color: var(--danger);"></i>
+                        <p style="margin-top: 1rem; font-weight: 600;">图片加载失败</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                            请检查GitHub配置是否正确<br>
+                            <small>当前路径：${imageUrl}</small>
+                        </p>
+                    </div>
+                `;
+            };
+        }
+
+        function setupAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.querySelectorAll('.feature-card').forEach((card, index) => {
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, index * 100);
+                        });
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.features-grid').forEach(grid => {
+                grid.querySelectorAll('.feature-card').forEach(card => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                    card.style.transition = 'all 0.6s ease';
+                });
+                observer.observe(grid);
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // 处理窗口大小变化
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('navMenu').classList.remove('active');
+                const icon = document.querySelector('#mobileToggle i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            }
+        });
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeSpeedPlanModal();
+            }
+        });
+
+        // 极速计划相关数据
+        const speedPlanDetailData = {
+            wifi: {
+                browsing: {
+                    title: "浏览网页卡顿/打不开 - 深度分析",
+                    issues: [
+                        "DNS解析延迟或污染（主要因素）",
+                        "浏览器缓存过多导致加载缓慢",
+                        "HTTPS握手过程超时",
+                        "网页资源（图片/脚本）加载阻塞"
+                    ],
+                    solutions: [
+                        "更换公共DNS：114.114.114.114 或 8.8.8.8",
+                        "清除浏览器缓存和Cookie数据",
+                        "启用DNS over HTTPS (DoH)加密查询",
+                        "禁用不必要的浏览器扩展插件"
+                    ]
+                },
+                gaming: {
+                    title: "玩游戏卡顿 - 深度分析",
+                    issues: [
+                        "游戏节点过远",
+                        "服务器负载过高响应缓慢",
+                        "本地设备性能不足",
+                        "上下行流量被占满"
+                    ],
+                    solutions: [
+                        "购买高速套餐",
+                        "选择延迟更低的VPN",
+                        "降低游戏画质设置减轻设备负担",
+                        "重启设备尝试"
+                    ]
+                },
+                download: {
+                    title: "下载速度慢 - 深度分析",
+                    issues: [
+                        "服务器带宽限制或拥堵",
+                        "P2P连接数不足导致下载源少",
+                        "上下行流量被占满",
+                        "存储空间不足"
+                    ],
+                    solutions: [
+                        "更换下载器下载",
+                        "购买5G的套餐",
+                        "关闭其他占用网络的应用程序",
+                        "检查内存空间"
+                    ]
+                }
+            },
+            app: {
+                "酷狗APP": {
+                    title: "酷狗音乐 - 加载缓慢分析",
+                    issues: [
+                        "服务器加载过慢",
+                        "首页推荐内容需要实时渲染",
+                        "网络请求响应延迟较高"
+                    ],
+                    solutions: [
+                        "清理缓存和离线数据",
+                        "使用WiFi-5G网络",
+                        "关闭后台其他占用带宽的应用"
+                    ]
+                },
+                "github.com": {
+                    title: "GitHub网站 - 访问失败分析",
+                    issues: [
+                        "DNS解析被污染或延迟",
+                        "CDN节点主要在国外",
+                        "GFW可能干扰访问"
+                    ],
+                    solutions: [
+                        "使用国内镜像站点",
+                        "修改hosts文件加速",
+                        "配置VPN工具"
+                    ]
+                },
+                "抖音APP": {
+                    title: "抖音短视频 - 加载缓慢分析",
+                    issues: [
+                        "视频自动播放消耗大量带宽",
+                        "初加载需要膨胀至1GB+",
+                        "抖音占用运行内存严重"
+                    ],
+                    solutions: [
+                        "设置仅在WiFi下自动播放",
+                        "降低视频播放清晰度",
+                        "定期清理缓存数据"
+                    ]
+                },
+                "我的世界APP": {
+                    title: "Minecraft - 卡顿分析",
+                    issues: [
+                        "服务器问题",
+                        "资源包和模组加载慢",
+                        "联机服务器连接不稳定"
+                    ],
+                    solutions: [
+                        "重新启动启动",
+                        "减少安装的模组数量",
+                        "使用流量进行游戏"
+                    ]
+                },
+                "豆包APP": {
+                    title: "豆包AI - 加载缓慢分析",
+                    issues: [
+                        "AI模型推理需要服务器资源",
+                        "服务器负载高",
+                        "服务器加载慢"
+                    ],
+                    solutions: [
+                        "错峰使用（避开晚高峰）",
+                        "减少连续对话长度",
+                        "检查网络连接稳定性"
+                    ]
+                }
+            }
+        };
+    </script>
+</body>
+</html>
