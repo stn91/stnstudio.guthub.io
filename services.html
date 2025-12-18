@@ -1,0 +1,588 @@
+<!-- 网页3: services.html - 服务详情（保持原样） -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务详情 - STNstudio宿舍网络</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #0ea5e9;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-menu a:hover::after,
+        .nav-menu a.active::after {
+            width: 100%;
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        main {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--dark) 0%, #1e3a8a 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--dark);
+        }
+
+        .service-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .service-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .service-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .service-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .service-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .service-price span {
+            font-size: 1rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .service-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .service-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .network-status {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .status-indicator {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .coverage-map {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .building-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .building-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+        }
+
+        .building-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                position: fixed;
+                top: 70px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 70px);
+                background: var(--dark);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                transition: left 0.4s ease;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .service-tiers {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="logo">
+                <i class="fas fa-network-wired"></i>
+                STNstudio
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="about.html">关于我们</a></li>
+                <li><a href="services.html" class="active">服务详情</a></li>
+                <li><a href="guide.html">使用指南</a></li>
+                <li><a href="contact.html">联系我们</a></li>
+            </ul>
+            <button class="mobile-toggle" id="mobileToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- 页面头部 -->
+        <section class="page-header">
+            <h1>服务详情</h1>
+            <p>透明的服务条款，专业的技术支持，为您的网络体验保驾护航</p>
+        </section>
+
+        <!-- 服务套餐 -->
+        <section class="content-section">
+            <h2 class="section-title">服务套餐</h2>
+            <div class="service-tiers">
+                <div class="service-card">
+                    <div class="service-badge">基础版</div>
+                    <h3 class="service-title">标准接入服务</h3>
+                    <div class="service-price">
+                        ¥0
+                        <span>/月</span>
+                    </div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">基础网络接入，满足日常学习需求</p>
+                    <ul class="service-features">
+                        <li>上下行对称50M带宽</li>
+                        <li>2.4GHz WiFi覆盖</li>
+                        <li>基础安全防护</li>
+                        <li>每日7:00-23:00技术支持</li>
+                        <li>单设备同时在线</li>
+                        <li>Web认证接入</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="alert('请联系管理员开通')">
+                        申请开通
+                    </button>
+                </div>
+
+                <div class="service-card" style="border: 2px solid var(--primary);">
+                    <div class="service-badge" style="background: var(--primary);">推荐</div>
+                    <h3 class="service-title">Premium尊享服务</h3>
+                    <div class="service-price">
+                        ¥29
+                        <span>/月</span>
+                    </div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">全功能高速网络，畅享数字生活</p>
+                    <ul class="service-features">
+                        <li>上下行对称200M带宽</li>
+                        <li>双频WiFi 6（2.4GHz+5GHz）</li>
+                        <li>多层安全防护</li>
+                        <li>7×24小时技术支持</li>
+                        <li>3设备同时在线</li>
+                        <li>802.1X认证+无感知认证</li>
+                        <li>专属网络优化通道</li>
+                        <li>延迟优化（游戏/直播）</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="alert('请联系管理员升级')">
+                        立即升级
+                    </button>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-badge">企业版</div>
+                    <h3 class="service-title">团队协作套餐</h3>
+                    <div class="service-price">
+                        ¥99
+                        <span>/月</span>
+                    </div>
+                    <p style="color: var(--text-light); margin-bottom: 2rem;">适合宿舍团队或小型项目组</p>
+                    <ul class="service-features">
+                        <li>上下行对称500M带宽</li>
+                        <li>专属独立IP地址</li>
+                        <li>定制网络安全策略</li>
+                        <li>5设备同时在线</li>
+                        <li>端口映射/DDNS支持</li>
+                        <li>网络使用分析报告</li>
+                        <li>故障优先响应</li>
+                        <li>专属技术顾问</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="alert('请联系商务定制')">
+                        联系我们
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 网络状态 -->
+        <section class="content-section">
+            <div class="network-status">
+                <h2 class="section-title" style="margin-bottom: 1rem;">实时网络状态</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">最后更新：<span id="updateTime"></span></p>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);">正常</div>
+                        <div class="status-indicator"></div>
+                        核心网络
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);">865</div>
+                        在线用户
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">948M</div>
+                        出口带宽
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--warning);">12ms</div>
+                        平均延迟
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 覆盖范围 -->
+        <section class="content-section">
+            <div class="coverage-map">
+                <h2 class="section-title" style="margin-bottom: 1rem;">覆盖范围</h2>
+                <p style="color: var(--text-light); margin-bottom: 1.5rem;">目前已覆盖以下宿舍楼，持续扩展中...</p>
+                
+                <div class="building-list">
+                    <div class="building-item">
+                        <span><strong>学生公寓A栋</strong></span>
+                        <span class="building-status">
+                            <div class="status-indicator"></div>
+                            已覆盖
+                        </span>
+                    </div>
+                    <div class="building-item">
+                        <span><strong>学生公寓B栋</strong></span>
+                        <span class="building-status">
+                            <div class="status-indicator"></div>
+                            已覆盖
+                        </span>
+                    </div>
+                    <div class="building-item">
+                        <span><strong>学生公寓C栋</strong></span>
+                        <span class="building-status">
+                            <div class="status-indicator"></div>
+                            已覆盖
+                        </span>
+                    </div>
+                    <div class="building-item">
+                        <span><strong>研究生公寓</strong></span>
+                        <span style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--warning); font-weight: 600;">
+                            <div class="status-indicator" style="background: var(--warning);"></div>
+                            部署中
+                        </span>
+                    </div>
+                    <div class="building-item">
+                        <span><strong>国际交流中心</strong></span>
+                        <span style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text-light); font-weight: 600;">
+                            <div class="status-indicator" style="background: var(--text-light);"></div>
+                            规划中
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLA服务承诺 -->
+        <section class="content-section">
+            <div class="network-status">
+                <h2 class="section-title" style="margin-bottom: 1rem;">SLA服务等级协议</h2>
+                <p style="color: var(--text-light); margin-bottom: 2rem;">我们承诺以下服务质量标准，未达标可申请服务补偿</p>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">99.9%</div>
+                        网络可用性
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">15分钟</div>
+                        故障响应时间
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">2小时</div>
+                        故障解决时间
+                    </div>
+                    <div class="status-item">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">95%</div>
+                        用户满意度
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 最终解释权STNstudio</p>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            const icon = mobileToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        // 更新状态时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('updateTime').textContent = now.toLocaleString('zh-CN');
+        }
+        updateTime();
+        setInterval(updateTime, 30000); // 每30秒更新一次
+    </script>
+</body>
+</html>
