@@ -1325,6 +1325,8 @@
             right: 30px;
             z-index: 9999;
             transition: var(--transition);
+            display: flex;
+            gap: 10px;
         }
 
         .music-toggle {
@@ -1372,6 +1374,36 @@
             transform: translateX(100%);
         }
 
+        /* 下一首按钮样式 */
+        .music-next {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-width: 50px;
+            min-height: 50px;
+        }
+
+        .music-next:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 24px rgba(14, 165, 233, 0.4);
+        }
+
+        .music-next:active {
+            transform: scale(0.95);
+        }
+
         .music-tooltip {
             position: absolute;
             bottom: 70px;
@@ -1406,12 +1438,12 @@
             transform: translateY(0);
         }
 
-        .music-toggle:disabled {
+        .music-toggle:disabled, .music-next:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .music-toggle:disabled:hover {
+        .music-toggle:disabled:hover, .music-next:disabled:hover {
             transform: none;
         }
 
@@ -1419,6 +1451,7 @@
             .music-player {
                 bottom: 20px;
                 right: 20px;
+                gap: 8px;
             }
             
             .music-toggle {
@@ -1427,6 +1460,14 @@
                 font-size: 1.25rem;
                 min-width: 50px;
                 min-height: 50px;
+            }
+            
+            .music-next {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+                min-width: 40px;
+                min-height: 40px;
             }
         }
 
@@ -2089,6 +2130,9 @@
         <button class="music-toggle" id="musicToggle" aria-label="播放/暂停音乐">
             <i class="fas fa-play" id="musicIcon"></i>
         </button>
+        <button class="music-next" id="musicNext" aria-label="下一首音乐">
+            <i class="fas fa-step-forward" id="nextIcon"></i>
+        </button>
         <div class="music-tooltip" id="musicTooltip">点击播放音乐</div>
     </div>
 
@@ -2458,6 +2502,7 @@
             const musicToggle = document.getElementById('musicToggle');
             const musicIcon = document.getElementById('musicIcon');
             const musicTooltip = document.getElementById('musicTooltip');
+            const musicNext = document.getElementById('musicNext');
             const volumeModalOverlay = document.getElementById('volumeModalOverlay');
             const volumeSlider = document.getElementById('volumeSlider');
             const volumeValue = document.getElementById('volumeValue');
@@ -2468,7 +2513,6 @@
             let userVolume = 0.2; // 默认音量20%
             let availableTracks = []; // 存储实际存在的音轨
             let currentTrackIndex = 0;
-            let userHasInteracted = false; // 标记用户是否已交互
 
             // 音轨配置（支持 music1.mp3 到 music5.mp3）
             const MAX_TRACKS = 5;
@@ -2577,6 +2621,8 @@
                     musicTooltip.textContent = '未找到音乐文件';
                     musicToggle.style.opacity = '0.5';
                     musicToggle.disabled = true;
+                    musicNext.style.opacity = '0.5';
+                    musicNext.disabled = true;
                     return;
                 }
 
@@ -2628,7 +2674,10 @@
                     audio.volume = userVolume;
                 }
                 hideVolumeModal();
-                startPlay();
+                // 如果当前没有播放，开始播放
+                if (!isPlaying) {
+                    startPlay();
+                }
             });
 
             // 取消按钮事件
@@ -2646,25 +2695,43 @@
                 }
             });
 
-            // ESC键关闭音量调节
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && volumeModalOverlay.classList.contains('active')) {
-                    hideVolumeModal();
-                }
-            });
-
             // 播放/暂停切换
             function togglePlay() {
                 if (isPlaying) {
                     pausePlay();
                 } else {
-                    // 显示音量调节模态框
-                    showVolumeModal();
+                    // 直接开始播放
+                    startPlay();
                 }
             }
 
-            // 点击事件
+            // 下一首功能
+            function playNext() {
+                if (availableTracks.length === 0) return;
+                
+                // 播放下一首
+                playNextTrack();
+                
+                if (!isPlaying) {
+                    isPlaying = true;
+                }
+            }
+
+            // 绑定事件
             musicToggle.addEventListener('click', togglePlay);
+            musicNext.addEventListener('click', playNext);
+
+            // 双击播放按钮打开音量调节
+            let lastClickTime = 0;
+            musicToggle.addEventListener('click', (e) => {
+                const currentTime = Date.now();
+                if (currentTime - lastClickTime < 300) {
+                    // 双击事件
+                    e.stopPropagation();
+                    showVolumeModal();
+                }
+                lastClickTime = currentTime;
+            });
 
             // 初始化：检查音轨并设置UI状态
             checkAvailableTracks().then(() => {
@@ -2672,31 +2739,12 @@
                     musicTooltip.textContent = '未找到音乐文件';
                     musicToggle.style.opacity = '0.5';
                     musicToggle.disabled = true;
+                    musicNext.style.opacity = '0.5';
+                    musicNext.disabled = true;
                 } else {
                     musicTooltip.textContent = `点击播放音乐 (${availableTracks.length}首)`;
                 }
             });
-
-            // 监听用户首次交互（用于自动播放）
-            const interactionHandler = () => {
-                if (!userHasInteracted) {
-                    userHasInteracted = true;
-                    document.removeEventListener('click', interactionHandler);
-                    document.removeEventListener('touchstart', interactionHandler);
-                    document.removeEventListener('keydown', interactionHandler);
-                }
-            };
-
-            document.addEventListener('click', interactionHandler, { once: true });
-            document.addEventListener('touchstart', interactionHandler, { once: true });
-            document.addEventListener('keydown', interactionHandler, { once: true });
-
-            // 5秒后尝试自动播放（需要用户已交互）
-            setTimeout(() => {
-                if (userHasInteracted && availableTracks.length > 0 && !isPlaying) {
-                    startPlay();
-                }
-            }, 5000);
         }
 
         // ===== 初始化 =====
