@@ -1430,6 +1430,136 @@
         .music-loading {
             animation: spin 1s linear infinite;
         }
+
+        /* ===== 音量调节模态框样式 ===== */
+        .volume-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .volume-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .volume-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 90vw;
+            width: 400px;
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .volume-modal-overlay.active .volume-modal-content {
+            transform: scale(1);
+        }
+
+        .volume-modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+            font-weight: 600;
+        }
+
+        .volume-slider-container {
+            margin: 2rem 0;
+            padding: 0 1rem;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .volume-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .volume-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .volume-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 1rem;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .volume-btn-confirm {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .volume-btn-confirm:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .volume-btn-cancel {
+            background: white;
+            color: var(--text-light);
+            border: 1px solid #e2e8f0;
+        }
+
+        .volume-btn-cancel:hover {
+            background: #f8fafc;
+            color: var(--text);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -1944,6 +2074,21 @@
         <div class="music-tooltip" id="musicTooltip">点击播放音乐</div>
     </div>
 
+    <!-- 音量调节模态框 -->
+    <div class="volume-modal-overlay" id="volumeModalOverlay">
+        <div class="volume-modal-content">
+            <h2 class="volume-modal-title">调节音量</h2>
+            <div class="volume-slider-container">
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="20">
+                <div class="volume-value" id="volumeValue">20%</div>
+            </div>
+            <div class="volume-buttons">
+                <button class="volume-btn volume-btn-confirm" id="volumeConfirmBtn">确认</button>
+                <button class="volume-btn volume-btn-cancel" id="volumeCancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 页脚 -->
     <footer>
         <div class="footer-content">
@@ -2298,47 +2443,107 @@
             }
         };
 
-        // ===== 音乐播放器功能 =====
+        // ===== 音乐播放器功能（带音量调节）=====
         function initMusicPlayer() {
             const audio = new Audio('./music.mp3');
             const musicToggle = document.getElementById('musicToggle');
             const musicIcon = document.getElementById('musicIcon');
             const musicTooltip = document.getElementById('musicTooltip');
+            const volumeModalOverlay = document.getElementById('volumeModalOverlay');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            const volumeConfirmBtn = document.getElementById('volumeConfirmBtn');
+            const volumeCancelBtn = document.getElementById('volumeCancelBtn');
+            
             let isPlaying = false;
+            let userVolume = 0.4; // 默认音量40%
             let autoPlayTimeout = null;
-            
+
             // 配置音频
-            audio.volume = 0.4; // 设置为40%音量
-            audio.loop = true; // 循环播放
-            
+            audio.volume = userVolume;
+            audio.loop = true;
+
+            // 更新音量显示
+            function updateVolumeDisplay(value) {
+                volumeValue.textContent = value + '%';
+            }
+
+            // 显示音量调节模态框
+            function showVolumeModal() {
+                volumeSlider.value = Math.round(userVolume * 100);
+                updateVolumeDisplay(Math.round(userVolume * 100));
+                volumeModalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            // 隐藏音量调节模态框
+            function hideVolumeModal() {
+                volumeModalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // 音量滑块变化事件
+            volumeSlider.addEventListener('input', (e) => {
+                updateVolumeDisplay(e.target.value);
+            });
+
+            // 确认按钮事件
+            volumeConfirmBtn.addEventListener('click', () => {
+                userVolume = volumeSlider.value / 100;
+                audio.volume = userVolume;
+                hideVolumeModal();
+                // 开始播放
+                audio.play().then(() => {
+                    isPlaying = true;
+                    musicIcon.classList.remove('fa-play');
+                    musicIcon.classList.add('fa-pause');
+                    musicTooltip.textContent = '点击暂停音乐';
+                }).catch(err => {
+                    console.log('播放失败:', err);
+                    showMusicInteractionPrompt();
+                });
+            });
+
+            // 取消按钮事件
+            volumeCancelBtn.addEventListener('click', () => {
+                hideVolumeModal();
+                // 不播放，保持暂停状态
+            });
+
+            // 点击模态框外部关闭
+            volumeModalOverlay.addEventListener('click', (e) => {
+                if (e.target === volumeModalOverlay) {
+                    hideVolumeModal();
+                }
+            });
+
+            // ESC键关闭音量调节
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && volumeModalOverlay.classList.contains('active')) {
+                    hideVolumeModal();
+                }
+            });
+
             // 播放/暂停切换
             function togglePlay() {
                 if (isPlaying) {
+                    // 暂停 - 直接暂停，不显示音量调节
                     audio.pause();
                     musicIcon.classList.remove('fa-pause');
                     musicIcon.classList.add('fa-play');
                     musicTooltip.textContent = '点击播放音乐';
+                    isPlaying = false;
                 } else {
-                    audio.play().then(() => {
-                        musicIcon.classList.remove('fa-play');
-                        musicIcon.classList.add('fa-pause');
-                        musicTooltip.textContent = '点击暂停音乐';
-                    }).catch(err => {
-                        console.log('播放失败:', err);
-                        musicTooltip.textContent = '请点击以播放音乐';
-                        // 显示用户交互提示
-                        showMusicInteractionPrompt();
-                    });
+                    // 播放 - 显示音量调节
+                    showVolumeModal();
                 }
-                isPlaying = !isPlaying;
             }
-            
+
             // 点击事件
             musicToggle.addEventListener('click', togglePlay);
-            
+
             // 5秒延迟自动播放（需要用户先交互）
             function attemptAutoPlay() {
-                // 检查是否已经与页面交互
                 if (document.hasInteraction) {
                     audio.play().then(() => {
                         isPlaying = true;
@@ -2347,57 +2552,35 @@
                         musicTooltip.textContent = '点击暂停音乐';
                     }).catch(err => {
                         console.log('自动播放被阻止:', err);
-                        // 显示交互提示
                         showMusicInteractionPrompt();
                     });
-                } else {
-                    // 如果没有交互，显示提示
-                    showMusicInteractionPrompt();
                 }
             }
-            
-            // 自动播放超时
+
             autoPlayTimeout = setTimeout(attemptAutoPlay, 5000);
-            
+
             // 监听用户首次交互
             let hasInteracted = false;
             const interactionHandler = () => {
                 if (!hasInteracted) {
                     hasInteracted = true;
                     document.hasInteraction = true;
-                    
-                    // 清除自动播放超时
                     clearTimeout(autoPlayTimeout);
-                    
-                    // 尝试立即播放
-                    setTimeout(() => {
-                        audio.play().then(() => {
-                            isPlaying = true;
-                            musicIcon.classList.remove('fa-play');
-                            musicIcon.classList.add('fa-pause');
-                            musicTooltip.textContent = '点击暂停音乐';
-                        }).catch(err => {
-                            console.log('交互后播放失败:', err);
-                        });
-                    }, 100);
-                    
-                    // 移除事件监听器
                     document.removeEventListener('click', interactionHandler);
                     document.removeEventListener('touchstart', interactionHandler);
                     document.removeEventListener('keydown', interactionHandler);
                 }
             };
-            
-            // 添加交互事件监听
+
             document.addEventListener('click', interactionHandler, { once: true });
             document.addEventListener('touchstart', interactionHandler, { once: true });
             document.addEventListener('keydown', interactionHandler, { once: true });
-            
+
             // 音频加载完成
             audio.addEventListener('canplaythrough', () => {
                 console.log('音乐加载完成');
             });
-            
+
             // 音频错误处理
             audio.addEventListener('error', (e) => {
                 console.error('音频加载失败:', e);
@@ -2405,10 +2588,9 @@
                 musicToggle.style.opacity = '0.5';
                 musicToggle.style.pointerEvents = 'none';
             });
-            
+
             // 显示交互提示
             function showMusicInteractionPrompt() {
-                // 创建提示气泡
                 const prompt = document.createElement('div');
                 prompt.innerHTML = '点击按钮播放背景音乐';
                 prompt.style.cssText = `
@@ -2421,12 +2603,10 @@
                     border-radius: 8px;
                     font-size: 0.875rem;
                     box-shadow: var(--shadow-lg);
-                    z-index: 10000;
+                    z-index: 10010;
                     animation: fadeIn 0.3s ease;
                 `;
                 document.body.appendChild(prompt);
-                
-                // 3秒后自动隐藏
                 setTimeout(() => {
                     prompt.style.animation = 'fadeOut 0.3s ease';
                     setTimeout(() => prompt.remove(), 300);
@@ -2437,7 +2617,7 @@
         // ===== 初始化 =====
         document.addEventListener('DOMContentLoaded', () => {
             init();
-            initMusicPlayer(); // 添加音乐播放器初始化
+            initMusicPlayer();
         });
         
         // ESC键关闭所有模态框
